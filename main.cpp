@@ -27,12 +27,12 @@ class Algorithms  {
 public:
     //Insertion sort (Z szablonem)
     template<typename T>
-    void insertionSort(T array[], int n) {
-        for (int step = 1; step < n; step++) {
+    void insertionSort(vector<T>& array) {
+        for (int step = 1; step < array.size(); step++) {
             T key = array[step];
             int j = step - 1;
 
-            while (key < array[j] && j >= 0) {
+            while (j >= 0 && key < array[j]) {
                 array[j + 1] = array[j];
                 --j;
             }
@@ -41,105 +41,95 @@ public:
     }
 
     //Quick Sort
-    void swapp(int *a, int *b) {
-        int t = *a;
-        *a = *b;
-        *b = t;
+    void swapp(int &a, int &b) {
+        int t = a;
+        a = b;
+        b = t;
     }
 
-    int partition(int array[], int low, int high) {
-
+    int partition(vector<int>& array, int low, int high) {
         int pivot = array[high];
-
         int i = (low - 1);
 
         for (int j = low; j < high; j++) {
             if (array[j] <= pivot) {
-
                 i++;
-
-                swapp(&array[i], &array[j]);
+                swapp(array[i], array[j]);
             }
+        }
+        swapp(array[i + 1], array[high]);
+        return (i + 1);
+    }
+
+    void quickSort(vector<int>& array, int low, int high) {
+        if (low < high) {
+            int pi = partition(array, low, high);
+            quickSort(array, low, pi - 1);
+            quickSort(array, pi + 1, high);
         }
     }
 
-        void quickSort(int array[], int low, int high) {
-            if (low < high) {
+    //Heap sort
+    void heapify(vector<int>& array, int n, int i) {
+        int largest = i;
+        int left = 2 * i + 1;
+        int right = 2 * i + 2;
 
-                int pi = partition(array, low, high);
+        if (left < n && array[left] > array[largest])
+            largest = left;
 
-                quickSort(array, low, pi - 1);
+        if (right < n && array[right] > array[largest])
+            largest = right;
 
-                quickSort(array, pi + 1, high);
-            }
+        // Swap and continue heapifying if root is not largest
+        if (largest != i) {
+            swap(array[i], array[largest]);
+            heapify(array, n, largest);
         }
+    }
 
-        //Heap sort
-        void heapify(int array[], int n, int i) {
-            int largest = i;
-            int left = 2 * i + 1;
-            int right = 2 * i + 2;
-
-            if (left < n && array[left] > array[largest])
-                largest = left;
-
-            if (right < n && array[right] > array[largest])
-                largest = right;
-
-            // Swap and continue heapifying if root is not largest
-            if (largest != i) {
-                swap(array[i], array[largest]);
-                heapify(array, n, largest);
-            }
-        }
-
-    void heapSort(int array[], int n) {
+    void heapSort(vector<int>& array) {
+        int n = array.size();
         for (int i = n / 2 - 1; i >= 0; i--)
             heapify(array, n, i);
 
         for (int i = n - 1; i >= 0; i--) {
             swap(array[0], array[i]);
-
             heapify(array, i, 0);
         }
     }
 
-    //Sprawdzanie tablicy
-    void checkTable(int size, int array[])  {
-        bool test = true;
-        for(int i = 1; i < size; i++)
-        if(array[i-1] <= array[i])
-            test == false;
-        if(!test)
-            cout << "Tab has been sorted incorrect";
+    //Shell sort
+    void shellSort(vector<int>& array) {
+        int n = array.size();
+        for (int interval = n / 2; interval > 0; interval /= 2) {
+            for (int i = interval; i < n; i += 1) {
+                int temp = array[i];
+                int j;
+                for (j = i; j >= interval && array[j - interval] > temp; j -= interval) {
+                    array[j] = array[j - interval];
+                }
+                array[j] = temp;
+            }
+        }
+    }
 
+    //Sprawdzanie tablicy
+    void checkTable(vector<int>& array) {
+        bool test = true;
+        for (int i = 1; i < array.size(); i++)
+            if (array[i - 1] > array[i])
+                test = false;
+        if (!test)
+            cout << "Tab has been sorted incorrectly" << endl;
     }
 
     //Drukowanie
-    void printArray(int array[], int n) {
-        for (int i = 0; i < n; i++) {
-            cout << array[i] << " ";
+    void printArray(vector<int>& array) {
+        for (int i = 0; i < array.size(); i++) {
+            cout << array[i] << " | ";
         }
         cout << endl;
-    }
-//--------------------------------------------------------------------------
-    //void insertionSort(int n, int tab[])   { }; Zrobione
-    //void quickSort(int n, int tab[])    { }; Zrobione
-    //void shellAlgorithm(int n, int tab[])    { }; Zrobione
-    //void heapSort(int n, int tab[])    { };
-
-//Shell sort
-    void shellSort(int array[], int n) {
-        for (int interval = n / 2; interval > 0; interval /= 2) {
-            for (int i = interval; i < n; i += 1) {
-              int temp = array[i];
-              int j;
-              for (j = i; j >= interval && array[j - interval] > temp; j -= interval) {
-                    array[j] = array[j - interval];
-              }
-              array[j] = temp;
-            }
-        }
     }
 };
 
@@ -179,20 +169,20 @@ class Test  {
      *  - 66% posortowania
 */
 public:
-    static void generateRandomArray(int array[], int size) {
+    static void generateRandomArray(vector<int>& array, int size) {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dis(1, 100); // zakres losowanych wartości (1-100)
+        uniform_int_distribution<> dis(1, 10000);
 
         for (int i = 0; i < size; ++i) {
-            array[i] = dis(gen);
+            array.push_back(dis(gen));
         }
     }
 
-    static double measureShellSortTime(int array[], int size, double& totalTime) {
+    static double measureShellSortTime(vector<int>& array, double& totalTime) {
         Algorithms algorithms;
         auto start = chrono::high_resolution_clock::now(); // Początek pomiaru czasu
-        algorithms.shellSort(array, size);
+        algorithms.shellSort(array);
         auto end = chrono::high_resolution_clock::now(); // Koniec pomiaru czasu
 
         chrono::duration<double, milli> elapsed = end - start; // Obliczenie czasu trwania w milisekundach
@@ -201,34 +191,53 @@ public:
         return time;
     }
 
-    void generatingAndTiming (int array[], int size, int iterations, double& totalTime){
+    void generatingAndTiming (vector<int>& array, int iterations, double& totalTime, int size){
+        Test test;
         for (int i = 0; i < iterations; ++i) {
-            Test::generateRandomArray(array, size); // Generowanie nowej tablicy z losowymi wartościami
-
-            double time = Test::measureShellSortTime(array, size, totalTime); // Pomiar czasu sortowania
+            test.printArray(array);
+            double time = Test::measureShellSortTime(array, totalTime); // Pomiar czasu sortowania
+            test.printArray(array);
+            array.clear();
+            test.generateRandomArray(array, size);
             cout << "Iteracja " << i+1 << ": Czas sortowania: " << time << " ms" << endl;
         }
 
         cout << "Suma czasów sortowania: " << totalTime << " ms" << endl;
     }
 
-    void printArray(int array[], int n){
-        for(int i = 0; i < n; i++)
-            cout << array[i];
+    void printArray(vector<int>& array){
+        for(auto i = array.begin(); i != array.end(); ++i)
+            cout << *i << " | ";
+        cout <<endl;
     }
 
 
 };
 
 int main() {
-    int size = 14;
-    int tab[14] = {24, 17, 9, 53, 11, 44, 106, 231, 30, 111, 54, 5, 3, 76};
+    int size;
+    double totalTime = 0;
+    cout << "Podaj ile chcesz miec liczb do posortowania: ";
+    cin >> size;
 
-    Algorithms algorithms;
 
-    cout << "WTF?" << endl;
-    algorithms.quickSort(tab, 3, 10);
-    algorithms.printArray(tab, size);
+    Test test;
+    vector<int> array;
+    vector<int> temp;
+
+    test.generateRandomArray(array, size);
+    test.printArray(array);
+    cout << endl;
+    temp = array;
+    /* Algorithms algorithms;
+    algorithms.shellSort(array);
+    algorithms.printArray(array); */
+
+    test.generatingAndTiming(temp, 10, totalTime, size);
+    test.printArray(array);
+
+
+
 
     return 0;
 }
