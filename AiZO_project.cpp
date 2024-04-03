@@ -2,24 +2,9 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
-
-class Menu  {
-
-    //interakcja z użytkownikiem
-    //wybór komend tak, jak w projekcie z zeszłego semu z javy feedback manager (aplikacja konsolowa)
-    //jeden wielki switch, wpisz numer komendy, funkcja sprawdzająca, czy użytkownik wpisał int, jak nie, to prosząca o ponowne wpisanie
-    //można zajebać i przerobić kod z tamtego projektu, jak da radę
-
-    /* 1. Przeprowadzenie testów
-     * 2. Sprawdzanie poprawności algorytmów:
-     *      a) wygeneruj tablicę i wypłnij liczbami losowymi (funkcja random), program powinien zapytać o rozmiar tablicy
-     *      b) odczytaj tablicę z pliku -> TXTFileWorker
-     * 3. Wyświetlenie ostatnio utworzonej tablicy
-     * 4. Uruchomienie wybranego algorytmu na ostatnio wczytanej tablicy i wyświetlenie po sortowaniu */
-
-};
 
 class Algorithms  {
 
@@ -138,6 +123,63 @@ public:
 
 class TXTFileWorker {
 
+public:
+    string path2File;
+    int size{};
+    void getPath()    {
+
+        string path;
+        cout << "Podaj sciezke do pliku: " << endl;
+        cin >> path;
+        validatePath(path);
+        path2File = path;
+
+    }
+
+    void validatePath(string path) {
+
+        char answer;
+        cout << "Czy podana sciezka jest poprawna (t/n)? -> : " + path << endl;
+        cin >> answer;
+
+        if (toupper(answer) == 'N') {
+            getPath();
+        } else if (toupper(answer) != 'T') {
+            cout << endl;
+            validatePath(path);
+        }
+
+    }
+
+    vector<int> getTab()   {
+
+        ifstream file(path2File);
+
+        if (!file.is_open()) {
+            cerr << "Nie udalo sie otworzyc pliku " << path2File << endl;
+            return {};
+        }
+
+        if (!(file >> size)) {
+            cerr << "Nie udalo sie odczytac rozmiaru tablicy z pliku " << path2File << endl;
+            file.close();
+            return {};
+        }
+
+        vector<int> array(size);
+
+        for (int i = 0; i < size; ++i) {
+            if (!(file >> array[i])) {
+                cerr << "Blad wczytywania danych z pliku " << path2File << std::endl;
+                file.close();
+                return {};
+            }
+        }
+
+        file.close();
+        return array;
+    }
+
     /* 1. Program ma zapytać o nazwę pliku, z którego ma pobrać dane
     2. W pierwszej linijce w programie jest wielkość tablicy, potem w każdej kolejnej linijce jest jedna liczba z tej tablicy np.
     3
@@ -252,6 +294,81 @@ public:
 
         test.generatingAndTiming(temp, 10, totalTime, size, algorithmNumber);
         test.printArray(array);
+    }
+
+};
+
+class Menu  {
+
+    //interakcja z użytkownikiem
+    //wybór komend tak, jak w projekcie z zeszłego semu z javy feedback manager (aplikacja konsolowa)
+    //jeden wielki switch, wpisz numer komendy, funkcja sprawdzająca, czy użytkownik wpisał int, jak nie, to prosząca o ponowne wpisanie
+    //można zajebać i przerobić kod z tamtego projektu, jak da radę
+
+    /* 1. Przeprowadzenie testów
+     * 2. Sprawdzanie poprawności algorytmów:
+     *      a) wygeneruj tablicę i wypłnij liczbami losowymi (funkcja random), program powinien zapytać o rozmiar tablicy
+     *      b) odczytaj tablicę z pliku -> TXTFileWorker
+     * 3. Wyświetlenie ostatnio utworzonej tablicy
+     * 4. Uruchomienie wybranego algorytmu na ostatnio wczytanej tablicy i wyświetlenie po sortowaniu */
+
+public:
+    std::vector<int> tab;
+    Algorithms alg;
+    TXTFileWorker txt;
+
+    Menu(Algorithms algorithms, TXTFileWorker txtFileWorker) : alg(algorithms), txt(txtFileWorker) {}
+
+    void menuDisplay() {
+        cout << "1. Testuj " << std::endl;
+        cout << "2. Wczytaj tablice " << std::endl;
+        cout << "3. Wyswietl ostatnio wczytana tablice" << std::endl;
+        cout << "4. Sortuj " << std::endl;
+        cout << "5. Sprawdz algorytm " << std::endl;
+        cout << "6. Zakoncz " << std::endl;
+        getUserInput();
+    }
+
+    void getUserInput() {
+        int input = 0;
+        cout << "Wybierz numer operacji do wykonania: ";
+
+        while (!(cin >> input) || input < 0 || input > 6) {
+            cin.clear();
+            cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+            cout << "Bledne dane. Sprobuj ponownie: ";
+        }
+
+        switch (input) {
+            case 1:
+                break;
+            case 2:
+                txt.getPath();
+                tab = txt.getTab();
+                displayTab();
+                menuDisplay();
+                break;
+            case 3:
+                displayTab();
+                break;
+            case 4:
+                break;
+            case 5:
+                break;
+            case 6:
+                break;
+        }
+    }
+
+    void displayTab() {
+        if (!tab.empty()) {
+            for (int num : tab) {
+                cout << num << " ";
+            }
+            cout << endl;
+        } else {
+            cout << "Brak tablicy do wyswietlenia. " << endl;
+        }
     }
 
 };
