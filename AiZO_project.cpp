@@ -115,22 +115,25 @@ public:
     }
 
     //Sprawdzanie tablicy
-    void checkTable(vector<int>& array) {
+    template<typename T>
+    void checkTable(vector<T>& array) {
         bool test = true;
         for (int i = 1; i < array.size(); i++)
             if (array[i - 1] > array[i])
                 test = false;
         if (!test)
             cout << "Tab has been sorted incorrectly" << endl;
+        if(test)
+            cout << "Wszystko gra !!!!!!!" << endl;
     }
 
-    //Drukowanie
+    /*Drukowanie
     void printArray(vector<int>& array) {
         for (int i = 0; i < array.size(); i++) {
             cout << array[i] << " | ";
         }
         cout << endl;
-    }
+    }*/
 };
 
 class TXTFileWorker {
@@ -169,20 +172,42 @@ class Test  {
      *  - 66% posortowania
 */
 public:
-    static void generateRandomArray(vector<int>& array, int size) {
+    template<typename T>
+    static void generateRandomArray(vector<T>& array, int size) {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dis(1, 10000);
+        uniform_real_distribution<> dis(1.0, 10000.0);
 
         for (int i = 0; i < size; ++i) {
             array.push_back(dis(gen));
         }
     }
 
-    static double measureShellSortTime(vector<int>& array, double& totalTime) {
+    template<typename T>
+    static double measure(vector<T>& array, double& totalTime, int algorithmNumber) {
         Algorithms algorithms;
         auto start = chrono::high_resolution_clock::now(); // Początek pomiaru czasu
-        algorithms.shellSort(array);
+        switch (algorithmNumber) {
+            case 1: {
+                vector<int> intArray(array.size());
+                transform(array.begin(), array.end(), intArray.begin(), [](float val) { return static_cast<int>(val); });
+                algorithms.quickSort(intArray, 0, intArray.size() - 1);
+                break;
+            }
+            case 2:
+                //algorithms.heapSort(static_cast<vector<int>&>(array));
+                break;
+            case 3:
+                //algorithms.shellSort(static_cast<vector<int>&>(array));
+                break;
+            case 4:
+                algorithms.insertionSort(array);
+                break;
+            default:
+                cout << "Podano niepoprawny numer!";
+                break;
+        }
+        //algorithms.shellSort(array);
         auto end = chrono::high_resolution_clock::now(); // Koniec pomiaru czasu
 
         chrono::duration<double, milli> elapsed = end - start; // Obliczenie czasu trwania w milisekundach
@@ -191,51 +216,73 @@ public:
         return time;
     }
 
-    void generatingAndTiming (vector<int>& array, int iterations, double& totalTime, int size){
+    template<typename T>
+    void generatingAndTiming (vector<T>& array, int iterations, double& totalTime, int size, int alghoritm){
         Test test;
+        Algorithms algorithms;
         for (int i = 0; i < iterations; ++i) {
             test.printArray(array);
-            double time = Test::measureShellSortTime(array, totalTime); // Pomiar czasu sortowania
+            double time = Test::measure(array, totalTime, alghoritm); // Pomiar czasu sortowania
             test.printArray(array);
+            algorithms.checkTable(array);
             array.clear();
             test.generateRandomArray(array, size);
-            cout << "Iteracja " << i+1 << ": Czas sortowania: " << time << " ms" << endl;
+            cout << "Iteracja " << i+1 << ": Czas sortowania: " << time << " ms" << endl << endl;
         }
 
         cout << "Suma czasów sortowania: " << totalTime << " ms" << endl;
     }
 
-    void printArray(vector<int>& array){
+    template<typename T>
+    void printArray(vector<T>& array){
         for(auto i = array.begin(); i != array.end(); ++i)
             cout << *i << " | ";
         cout <<endl;
     }
 
+    template<typename T>
+    void wywolanieFunkcji(vector<T>& array, double totalTime, int size, int algorithmNumber){
+        Test test;
+        vector<T> temp;
+
+        test.generateRandomArray(array, size);
+        test.printArray(array);
+        cout << endl;
+        temp = array;
+
+        test.generatingAndTiming(temp, 10, totalTime, size, algorithmNumber);
+        test.printArray(array);
+    }
 
 };
 
 int main() {
-    int size;
+    int size, algorithmNumber;
     double totalTime = 0;
     cout << "Podaj ile chcesz miec liczb do posortowania: ";
     cin >> size;
+    cout << "Podaj algorytm do przetestowania (1-5): ";
+    cin >> algorithmNumber;
+    // 1 - quickSort, 2 - heapSort, 3 - shellSort, 4 - InsertionSort
 
 
     Test test;
-    vector<int> array;
-    vector<int> temp;
+
+    vector<float> array;
+    test.wywolanieFunkcji(array, totalTime, size, algorithmNumber);
+    /*vector<int> temp;
 
     test.generateRandomArray(array, size);
     test.printArray(array);
     cout << endl;
     temp = array;
+
     /* Algorithms algorithms;
     algorithms.shellSort(array);
-    algorithms.printArray(array); */
+    algorithms.printArray(array);//
 
-    test.generatingAndTiming(temp, 10, totalTime, size);
-    test.printArray(array);
-
+    test.generatingAndTiming(temp, 10, totalTime, size, algorithmNumber);
+    test.printArray(array);*/
 
 
 
