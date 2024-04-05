@@ -151,9 +151,12 @@ public:
 
     }
 
-    vector<int> getTab()   {
+    template<typename T>
+    vector<T> getTab() {
 
         ifstream file(path2File);
+        int size;
+        T num;
 
         if (!file.is_open()) {
             cerr << "Nie udalo sie otworzyc pliku " << path2File << endl;
@@ -166,14 +169,15 @@ public:
             return {};
         }
 
-        vector<int> array(size);
+        vector<T> array(size);
 
         for (int i = 0; i < size; ++i) {
-            if (!(file >> array[i])) {
-                cerr << "Blad wczytywania danych z pliku " << path2File << std::endl;
+            if (!(file >> num)) {
+                cerr << "Blad wczytywania danych z pliku " << path2File << endl;
                 file.close();
                 return {};
             }
+            array[i] = num;
         }
 
         file.close();
@@ -218,7 +222,7 @@ public:
     static void generateRandomArray(vector<T>& array, int size) {
         random_device rd;
         mt19937 gen(rd());
-        uniform_real_distribution<> dis(1.0, 10000.0);
+        uniform_int_distribution<> dis(1, 10000);
 
         for (int i = 0; i < size; ++i) {
             array.push_back(dis(gen));
@@ -230,15 +234,17 @@ public:
         Algorithms algorithms;
         auto start = chrono::high_resolution_clock::now(); // Początek pomiaru czasu
         switch (algorithmNumber) {
-            case 1: {
-                algorithms.quickSort(array, 0, array.size() - 1);
+            case 1:
+                if constexpr (is_same_v<T, int>)
+                    algorithms.quickSort(array, 0, array.size() - 1);
                 break;
-            }
             case 2:
-                algorithms.heapSort(array);
+                if constexpr (is_same_v<T, int>)
+                    algorithms.heapSort(array);
                 break;
             case 3:
-                algorithms.shellSort(array);
+                if constexpr (is_same_v<T, int>)
+                    algorithms.shellSort(array);
                 break;
             case 4:
                 algorithms.insertionSort(array);
@@ -285,7 +291,7 @@ public:
         Test test;
         vector<T> temp;
 
-
+        //W razie czego wywalić tego ifa bo wtedy ta tablica jest tą wczytaną z pliku txt co nie do końca jest git
         if(array.empty())
             test.generateRandomArray(array, size);
 
@@ -315,7 +321,7 @@ class Menu  {
 
 public:
     vector<int> array;
-    vector<float> tabFloat;
+    vector<float> arrayFloat;
     Algorithms alg;
     TXTFileWorker txt;
     Test test;
@@ -348,19 +354,43 @@ public:
                 AlgTest();
                 break;
             case 2:
+                array.clear();
+                arrayFloat.clear();
                 txt.getPath();
-                array = txt.getTab();
-                displayTab();
-                menuDisplay();
+                if(typeCheck()){
+                    array = txt.getTab<int>();
+                    displayTab();
+                }else{
+                    arrayFloat = txt.getTab<float>();
+                    displayTabFloat();
+                }
+                //txt.getPath();
+                //array = txt.getTab<int>();
+                //menuDisplay();
                 break;
             case 3:
-                displayTab();
+                if (!array.empty()){
+                    displayTab();
+                } else{
+                    displayTabFloat();
+                }
                 break;
             case 4:
                 SortAlg();
+                if (!array.empty()){
+                    displayTab();
+                } else{
+                    displayTabFloat();
+                }
                 break;
             case 5:
-                alg.checkTable(array);
+                if (array.empty()){
+                    alg.checkTable(arrayFloat);
+                }else if (arrayFloat.empty()){
+                    alg.checkTable(array);
+                } else{
+                    cout << "Tablica jest pusta!";
+                }
                 break;
             case 6:
                 end = false;
@@ -371,6 +401,17 @@ public:
     void displayTab() {
         if (!array.empty()) {
             for (int num : array) {
+                cout << num << " ";
+            }
+            cout << endl;
+        } else {
+            cout << "Brak tablicy do wyswietlenia. " << endl;
+        }
+    }
+
+    void displayTabFloat() {
+        if (!arrayFloat.empty()) {
+            for (float num : arrayFloat) {
                 cout << num << " ";
             }
             cout << endl;
@@ -393,13 +434,25 @@ public:
     }
 
     void SortAlg(){
-        int algorithmNumber;
         double totalTime = 0;
-        cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
-        cout << "Podaj algorytm do przetestowania (1-4): " << endl;
-        cin >> algorithmNumber;
-        double time = Test::measure(array, totalTime, algorithmNumber);
-        cout << time;
+        if (!array.empty()){
+            int algorithmNumber;
+            cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
+            cout << "Podaj algorytm do przetestowania (1-4): " << endl;
+            cin >> algorithmNumber;
+            double time = Test::measure(array, totalTime, algorithmNumber);
+            cout << "Czas sortowania wyniosl: "<< time << " ms" << endl;
+        }else{
+            double time = Test::measure(arrayFloat, totalTime, 4);
+            cout << "Czas sortowania wyniosl: "<< time << " ms" << endl;
+        }
+    }
+
+    int typeCheck(){
+        int type;
+        cout << "Podaj czy chcesz wprowadzic float (0) czy int (1): " << endl;
+        cin >> type;
+        return type;
     }
 
 };
