@@ -107,9 +107,9 @@ public:
             if (array[i - 1] > array[i])
                 test = false;
         if (!test)
-            cout << "Tab has been sorted incorrectly" << endl;
+            cout << "Blad sortowania!" << endl;
         if(test)
-            cout << "Wszystko gra !!!!!!!" << endl;
+            cout << "Tablica została posortowana prawidlowo" << endl;
     }
 
     /*Drukowanie
@@ -231,16 +231,14 @@ public:
         auto start = chrono::high_resolution_clock::now(); // Początek pomiaru czasu
         switch (algorithmNumber) {
             case 1: {
-                vector<int> intArray(array.size());
-                transform(array.begin(), array.end(), intArray.begin(), [](float val) { return static_cast<int>(val); });
-                algorithms.quickSort(intArray, 0, intArray.size() - 1);
+                algorithms.quickSort(array, 0, array.size() - 1);
                 break;
             }
             case 2:
-                //algorithms.heapSort(static_cast<vector<int>&>(array));
+                algorithms.heapSort(array);
                 break;
             case 3:
-                //algorithms.shellSort(static_cast<vector<int>&>(array));
+                algorithms.shellSort(array);
                 break;
             case 4:
                 algorithms.insertionSort(array);
@@ -283,17 +281,20 @@ public:
     }
 
     template<typename T>
-    void wywolanieFunkcji(vector<T>& array, double totalTime, int size, int algorithmNumber){
+    void wywolanieFunkcji(vector<T>& array, double totalTime, int size, int algorithmNumber, int repeat){
         Test test;
         vector<T> temp;
 
-        test.generateRandomArray(array, size);
-        test.printArray(array);
-        cout << endl;
-        temp = array;
 
-        test.generatingAndTiming(temp, 10, totalTime, size, algorithmNumber);
-        test.printArray(array);
+        if(array.empty())
+            test.generateRandomArray(array, size);
+
+        temp = array;
+        //test.printArray(array);
+        //cout << endl;
+
+        test.generatingAndTiming(temp, repeat, totalTime, size, algorithmNumber);
+        //test.printArray(array);
     }
 
 };
@@ -313,19 +314,22 @@ class Menu  {
      * 4. Uruchomienie wybranego algorytmu na ostatnio wczytanej tablicy i wyświetlenie po sortowaniu */
 
 public:
-    std::vector<int> tab;
+    vector<int> array;
+    vector<float> tabFloat;
     Algorithms alg;
     TXTFileWorker txt;
+    Test test;
+    bool end = true;
 
-    Menu(Algorithms algorithms, TXTFileWorker txtFileWorker) : alg(algorithms), txt(txtFileWorker) {}
+    //Menu(Algorithms algorithms, TXTFileWorker txtFileWorker) : alg(algorithms), txt(txtFileWorker) {}
 
     void menuDisplay() {
-        cout << "1. Testuj " << std::endl;
-        cout << "2. Wczytaj tablice " << std::endl;
-        cout << "3. Wyswietl ostatnio wczytana tablice" << std::endl;
-        cout << "4. Sortuj " << std::endl;
-        cout << "5. Sprawdz algorytm " << std::endl;
-        cout << "6. Zakoncz " << std::endl;
+        cout << "1. Testuj " << endl;
+        cout << "2. Wczytaj tablice " << endl;
+        cout << "3. Wyswietl ostatnio wczytana tablice" << endl;
+        cout << "4. Sortuj " << endl;
+        cout << "5. Sprawdz algorytm " << endl;
+        cout << "6. Zakoncz " << endl;
         getUserInput();
     }
 
@@ -335,16 +339,17 @@ public:
 
         while (!(cin >> input) || input < 0 || input > 6) {
             cin.clear();
-            cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "Bledne dane. Sprobuj ponownie: ";
         }
 
         switch (input) {
             case 1:
+                AlgTest();
                 break;
             case 2:
                 txt.getPath();
-                tab = txt.getTab();
+                array = txt.getTab();
                 displayTab();
                 menuDisplay();
                 break;
@@ -352,17 +357,20 @@ public:
                 displayTab();
                 break;
             case 4:
+                SortAlg();
                 break;
             case 5:
+                alg.checkTable(array);
                 break;
             case 6:
+                end = false;
                 break;
         }
     }
 
     void displayTab() {
-        if (!tab.empty()) {
-            for (int num : tab) {
+        if (!array.empty()) {
+            for (int num : array) {
                 cout << num << " ";
             }
             cout << endl;
@@ -371,10 +379,39 @@ public:
         }
     }
 
+    void AlgTest(){
+        int size, algorithmNumber, repeat;
+        double totalTime = 0;
+        cout << "Podaj ile chcesz miec liczb do posortowania: ";
+        cin >> size;
+        cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
+        cout << "Podaj algorytm do przetestowania (1-4): " << endl;
+        cin >> algorithmNumber;
+        cout << "Podaj ile powtorzen chcesz wykonac: " << endl;
+        cin >> repeat;
+        test.wywolanieFunkcji(array, totalTime, size, algorithmNumber, repeat);
+    }
+
+    void SortAlg(){
+        int algorithmNumber;
+        double totalTime = 0;
+        cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
+        cout << "Podaj algorytm do przetestowania (1-4): " << endl;
+        cin >> algorithmNumber;
+        double time = Test::measure(array, totalTime, algorithmNumber);
+        cout << time;
+    }
+
 };
 
 int main() {
-    int size, algorithmNumber;
+
+    Menu menu;
+    while (menu.end)
+        menu.menuDisplay();
+
+
+    /*int size, algorithmNumber;
     double totalTime = 0;
     cout << "Podaj ile chcesz miec liczb do posortowania: ";
     cin >> size;
@@ -385,8 +422,10 @@ int main() {
 
     Test test;
 
-    vector<float> array;
-    test.wywolanieFunkcji(array, totalTime, size, algorithmNumber);
+    vector<int> array;
+    test.wywolanieFunkcji(array, totalTime, size, algorithmNumber);*/
+
+
     /*vector<int> temp;
 
     test.generateRandomArray(array, size);
