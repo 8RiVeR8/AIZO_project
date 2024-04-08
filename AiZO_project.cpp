@@ -111,21 +111,13 @@ public:
         if(test)
             cout << "Tablica została posortowana prawidlowo" << endl;
     }
-
-    /*Drukowanie
-    void printArray(vector<int>& array) {
-        for (int i = 0; i < array.size(); i++) {
-            cout << array[i] << " | ";
-        }
-        cout << endl;
-    }*/
 };
 
 class TXTFileWorker {
 
 public:
     string path2File;
-    int size{};
+    //int size{};
     void getPath()    {
 
         string path;
@@ -183,46 +175,16 @@ public:
         file.close();
         return array;
     }
-
-    /* 1. Program ma zapytać o nazwę pliku, z którego ma pobrać dane
-    2. W pierwszej linijce w programie jest wielkość tablicy, potem w każdej kolejnej linijce jest jedna liczba z tej tablicy np.
-    3
-    56
-    76
-    32
-    to tab[3] = [56, 76, 32]
-    4. Program ma wyświetlić tablicę przed sortowaniem i po sortowaniu */
-
 };
 
 class Test  {
-    /* 1. Badanie czasów sortowania tablic w funkcji ich rozmiaru
-     *
-     * a) dla 7 rozmiarów tablic dobranych rosnąco i tak, aby wyniki pomiarów były w ms i więcej
-     *      np. 10 000, 20 000, 30 000 ... 70 000
-     *      po 100 pomiarów dla za każdym razem nowo wygenerowanej losowej tablicy
-     *      zmierzyć czasy sortowania dla poszczególnych algorytmów, pomijając czas generacji danych
-     *      dane powinny być generowane losowo
-     *      wyniki należy uśrednić i na ich podstawie zrobić wykresy np. w pythonie
-     *      
-     * trzeba to będzie rozdzielić wszystko sensowanie na funkcje, żeby nie duplikować kodu
-     * 
-     * 
-     * 
-     * 2. Przypadki szczególne
-     * To samo, co na górze, ale dla tablic:
-     * a) posortowanych rosnąco
-     * b) posortowanych malejąco
-     * c) tablic posortowanych częściowo 
-     *  - 33% posortowania
-     *  - 66% posortowania
-*/
+
 public:
     template<typename T>
     static void generateRandomArray(vector<T>& array, int size) {
         random_device rd;
         mt19937 gen(rd());
-        uniform_int_distribution<> dis(1, 10000);
+        uniform_real_distribution<> dis(1, 10000);
 
         for (int i = 0; i < size; ++i) {
             array.push_back(dis(gen));
@@ -232,7 +194,7 @@ public:
     template<typename T>
     static double measure(vector<T>& array, double& totalTime, int algorithmNumber) {
         Algorithms algorithms;
-        auto start = chrono::high_resolution_clock::now(); // Początek pomiaru czasu
+        auto start = chrono::high_resolution_clock::now();
         switch (algorithmNumber) {
             case 1:
                 if constexpr (is_same_v<T, int>)
@@ -253,12 +215,11 @@ public:
                 cout << "Podano niepoprawny numer!";
                 break;
         }
-        //algorithms.shellSort(array);
-        auto end = chrono::high_resolution_clock::now(); // Koniec pomiaru czasu
+        auto end = chrono::high_resolution_clock::now();
 
-        chrono::duration<double, milli> elapsed = end - start; // Obliczenie czasu trwania w milisekundach
-        double time = elapsed.count(); // Czas sortowania w milisekundach
-        totalTime += time; // Dodanie czasu do sumy
+        chrono::duration<double, milli> elapsed = end - start;
+        double time = elapsed.count();
+        totalTime += time;
         return time;
     }
 
@@ -296,28 +257,13 @@ public:
             test.generateRandomArray(array, size);
 
         temp = array;
-        //test.printArray(array);
-        //cout << endl;
 
         test.generatingAndTiming(temp, repeat, totalTime, size, algorithmNumber);
-        //test.printArray(array);
     }
 
 };
 
 class Menu  {
-
-    //interakcja z użytkownikiem
-    //wybór komend tak, jak w projekcie z zeszłego semu z javy feedback manager (aplikacja konsolowa)
-    //jeden wielki switch, wpisz numer komendy, funkcja sprawdzająca, czy użytkownik wpisał int, jak nie, to prosząca o ponowne wpisanie
-    //można zajebać i przerobić kod z tamtego projektu, jak da radę
-
-    /* 1. Przeprowadzenie testów
-     * 2. Sprawdzanie poprawności algorytmów:
-     *      a) wygeneruj tablicę i wypłnij liczbami losowymi (funkcja random), program powinien zapytać o rozmiar tablicy
-     *      b) odczytaj tablicę z pliku -> TXTFileWorker
-     * 3. Wyświetlenie ostatnio utworzonej tablicy
-     * 4. Uruchomienie wybranego algorytmu na ostatnio wczytanej tablicy i wyświetlenie po sortowaniu */
 
 public:
     vector<int> array;
@@ -326,8 +272,6 @@ public:
     TXTFileWorker txt;
     Test test;
     bool end = true;
-
-    //Menu(Algorithms algorithms, TXTFileWorker txtFileWorker) : alg(algorithms), txt(txtFileWorker) {}
 
     void menuDisplay() {
         cout << "1. Testuj " << endl;
@@ -364,9 +308,6 @@ public:
                     arrayFloat = txt.getTab<float>();
                     displayTabFloat();
                 }
-                //txt.getPath();
-                //array = txt.getTab<int>();
-                //menuDisplay();
                 break;
             case 3:
                 if (!array.empty()){
@@ -421,16 +362,23 @@ public:
     }
 
     void AlgTest(){
-        int size, algorithmNumber, repeat;
+        int size, algorithmNumber, repeat, type;
         double totalTime = 0;
         cout << "Podaj ile chcesz miec liczb do posortowania: ";
         cin >> size;
-        cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
-        cout << "Podaj algorytm do przetestowania (1-4): " << endl;
-        cin >> algorithmNumber;
         cout << "Podaj ile powtorzen chcesz wykonac: " << endl;
         cin >> repeat;
-        test.wywolanieFunkcji(array, totalTime, size, algorithmNumber, repeat);
+        cout << "Chcesz generowac float (0) czy int (1): ";
+        cin >>type;
+        if (type){
+            cout << "1. Quick Sort 2. HeapSort 3. ShellSort 4. InsertionSort" << endl;
+            cout << "Podaj algorytm do przetestowania (1-4): " << endl;
+            cin >> algorithmNumber;
+            test.wywolanieFunkcji(array, totalTime, size, algorithmNumber, repeat);
+        }else{
+            test.wywolanieFunkcji(arrayFloat, totalTime, size, 4, repeat);
+        }
+
     }
 
     void SortAlg(){
@@ -462,38 +410,6 @@ int main() {
     Menu menu;
     while (menu.end)
         menu.menuDisplay();
-
-
-    /*int size, algorithmNumber;
-    double totalTime = 0;
-    cout << "Podaj ile chcesz miec liczb do posortowania: ";
-    cin >> size;
-    cout << "Podaj algorytm do przetestowania (1-5): ";
-    cin >> algorithmNumber;
-    // 1 - quickSort, 2 - heapSort, 3 - shellSort, 4 - InsertionSort
-
-
-    Test test;
-
-    vector<int> array;
-    test.wywolanieFunkcji(array, totalTime, size, algorithmNumber);*/
-
-
-    /*vector<int> temp;
-
-    test.generateRandomArray(array, size);
-    test.printArray(array);
-    cout << endl;
-    temp = array;
-
-    /* Algorithms algorithms;
-    algorithms.shellSort(array);
-    algorithms.printArray(array);//
-
-    test.generatingAndTiming(temp, 10, totalTime, size, algorithmNumber);
-    test.printArray(array);*/
-
-
 
     return 0;
 }
